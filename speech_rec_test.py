@@ -1,6 +1,11 @@
 #!/usr/bin/python3
 # copied without modifications from
 # https://github.com/Uberi/speech_recognition/blob/master/examples/microphone_recognition.py
+
+# note: I got this to work only when updating pyaudio and portaudio in exactly this way:
+# https://stackoverflow.com/questions/53058689/oserror-no-default-input-device-available?rq=1
+# conda install nwani::portaudio nwani::pyaudio
+
 import speech_recognition as sr
 
 # obtain audio from the microphone
