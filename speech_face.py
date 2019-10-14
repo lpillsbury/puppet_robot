@@ -41,7 +41,8 @@ def blink_eyes(blink_type):
 def move_mouth():
     p = GPIO.PWM(servoPIN, 50)
     p.start(2.5) # initialization
-    try:
+    talking = speak.empty()# check to see if the puppet should be talking
+    while (talking ==True):
         # need a while talking. do i need the try?
         p.ChangeDutyCycle(3)
         time.sleep(0.2)
@@ -52,22 +53,23 @@ def move_mouth():
         p.ChangeDutyCycle(5)
         time.sleep(0.5)
         p.ChangeDutyCycle(2.5)
-        p.stop()
-        GPIO.cleanup()
-        
-    # this exception should actually be "when I'm done talking"
-    except KeyboardInterrupt:
-        p.stop()
-        GPIO.cleanup()
-        
+        talking = talkthread.Event()
+    p.stop()
+    GPIO.cleanup()
+    
+# would I be able to check whether other threads were started and ended if
+# I didn't start them from main?
+# speech output and mouth movement at same time
+greet = threading.Thread(target=say_greetings)
+speak = threading.Thread(target=move_mouth)
+
 def main():
-    # speech output and mouth movement at same time
-    thread.start_new_thread(say_greetings,())
-    thread.start_new_thread(move_mouth, ())
-    time.sleep(10)
-    #say_greetings()
-    #move_mouth()
-    #blink_eyes(1)
+
+    #blink = threading.Thread(target=blink_eyes,args=1)
+    greet.start()
+    speak.start()
+    #blink.start()
+    time.sleep(15)
     
 if __name__=="__main__":
     main()
