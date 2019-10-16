@@ -5,7 +5,11 @@
 import subprocess
 import RPi.GPIO as GPIO
 import time
-import threading
+import threading # read https://realpython.com/intro-to-python-threading/
+import logging # info about how to use logging at https://realpython.com/python-logging/
+
+logging.basicConfig(level=logging.DEBUG)
+logging.debug('This will get logged')
 
 # set up GPIO settings and pins
 GPIO.setwarnings(False)
@@ -16,12 +20,12 @@ servoPIN =17
 GPIO.setup(g_eye,GPIO.OUT)
 GPIO.setup(b_eye,GPIO.OUT)
 GPIO.setup(servoPIN, GPIO.OUT)
-    
+
 def say_greetings():
     subprocess.call('espeak -s 100 -v en-uk-north "I am a puppet and who are you?" --stdout | aplay', shell=True)
     subprocess.call('espeak -s 100 -v sw "Mimi ni kidoli. wewe ni nani? " --stdout | aplay', shell=True)
     subprocess.call('espeak -s 100 -v es "Yo soy una muneca. Quien eres tu?" --stdout | aplay', shell=True)
- 
+
 def blink_eyes(blink_type):
     if blink_type==1:
         GPIO.output(g_eye,True)
@@ -56,7 +60,7 @@ def move_mouth():
         talking = talkthread.Event()
     p.stop()
     GPIO.cleanup()
-    
+
 # would I be able to check whether other threads were started and ended if
 # I didn't start them from main?
 # speech output and mouth movement at same time
@@ -70,6 +74,6 @@ def main():
     speak.start()
     #blink.start()
     time.sleep(15)
-    
+
 if __name__=="__main__":
     main()
