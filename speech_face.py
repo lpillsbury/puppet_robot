@@ -1,18 +1,21 @@
 #!/usr/bin/python3
-# in this program the puppet talks, recognizes user voice
-# and moves eyes and mouth
-# still need to get speech recognition to work
+# in this program the puppet talks, asks the user their name, and says hi
+# mouth moves, eyes blink
+# because Raspi doesn't have microphone jack, user inputs name on the keyboard
 
 import subprocess
 import RPi.GPIO as GPIO
 import time
 import threading # read https://realpython.com/intro-to-python-threading/
 import logging # info about how to use logging at https://realpython.com/python-logging/
+import sys
+
 
 logging.basicConfig(level=logging.DEBUG)
 logging.debug('Starting the program')
+logging.debug('python version ' + sys.version)
 
-# set up GPIO settings and pins
+# sEnter your name here then hit returnet up GPIO settings and pins
 GPIO.setwarnings(False)
 GPIO.setmode(GPIO.BCM)
 g_eye = 17
@@ -26,12 +29,17 @@ def say_greetings():
     greet_event.set()  # thought I'd need the events actually probably dont
     logging.debug('starting saying the greetings')
     subprocess.call('espeak -s 100 -v en-uk-north "I am a puppet and who are you?" --stdout | aplay', shell=True)
-    #subprocess.call('espeak -s 100 -v sw "Mimi ni kidoli. wewe ni nani? " --stdout | aplay', shell=True)
-    #subprocess.call('espeak -s 100 -v es "Yo soy una muneca. Quien eres tu?" --stdout | aplay', shell=True)
+    subprocess.call('espeak -s 100 -v sw "Mimi ni kidoli. wewe ni nani? " --stdout | aplay', shell=True)
+    subprocess.call('espeak -s 100 -v es "Yo soy una muneca. Quien eres tu?" --stdout | aplay', shell=True)
     logging.debug('finished saying greetings')
     greet_event.clear()
     
-def say_stuff(uname):
+def get_uname():
+    # need this to be global so that it will be available to say_stuff function
+    uname = input('Enter your name here then hit return\n')
+    return uname
+    
+def say_stuff():
     logging.debug('talking to the user')
     if isinstance(uname,str):
         text = "So nice to meet you"+uname
@@ -39,11 +47,10 @@ def say_stuff(uname):
     else:
         text = "Sorry I didn't understand you. It's nice to meet you anyways."
     subprocess.call('espeak -s 100 -v en-uk-north "%s" --stdout | aplay'%text, shell=True)
-    #subprocess.call('espeak -s 100 -v en-uk-north text --stdout | aplay', shell=True)
-    logging.debug('finished speaking')
-    
+    logging.debug('finished speaking')   
+
 def blink_eyes():
-    blink_type=2
+    blink_type=1
     keep_blinking = greet.isAlive()
     if blink_type==1:
         while(keep_blinking == True):
@@ -86,18 +93,15 @@ def move_mouth(talk_func_name):
         time.sleep(0.5)
         p.ChangeDutyCycle(2.5)
         logging.debug('Moved mouth a cycle')
-        keep_talking = greet.isAlive()
+        keep_talking = talk_func_name.isAlive()
         logging.debug('keep talking=')
         logging.debug(keep_talking)
     talk_func_name.join()
     p.stop()
     logging.debug('Done moving mouth')
 
-# would I be able to check whether other threads were started and ended if
-# I didn't start them from main?
-# speech output and mouth movement at same time
 greet = threading.Thread(target=say_greetings)
-say_more = threading.Thread(target=say_stuff, args=("Damien",))
+say_more = threading.Thread(target=say_stuff)
 yap1 = threading.Thread(target=move_mouth, args=(greet,))
 yap2 = threading.Thread(target=move_mouth, args=(say_more,))
 greet_event = threading.Event()
@@ -105,17 +109,20 @@ blink = threading.Thread(target=blink_eyes)
 
 
 def main():
+    global uname
     greet.start()
     yap1.start()
     blink.start()
     yap1.join()
     blink.join()
-    
+    uname = get_uname()
     # will now say hello
+    time.sleep(2)
+    logging.debug('will now respond')
     yap2.start()
+    
     say_more.start()
     yap2.join()
-    logging.debug('program has ended')
  
 if __name__=="__main__":
     main()
