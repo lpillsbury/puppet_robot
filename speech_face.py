@@ -36,17 +36,24 @@ def say_greetings():
     
 def get_uname():
     # need this to be global so that it will be available to say_stuff function
-    uname = input('Enter your name here then hit return\n')
-    return uname
+    try:
+        uname = input('Enter your name here then hit return\n')
+        return uname
+    except:
+        return 1
     
 def say_stuff():
     logging.debug('talking to the user')
-    if isinstance(uname,str):
-        text = "So nice to meet you"+uname
-        
-    else:
+    try:
+        if isinstance(uname,str):
+            text = "So nice to meet you"+uname
+        else:
+            logging.debug('user input not recognized')
+            text = "Sorry I didn't understand you. It's nice to meet you anyways."
+        subprocess.call('espeak -s 100 -v en-uk-north "%s" --stdout | aplay'%text, shell=True)
+    except:
         text = "Sorry I didn't understand you. It's nice to meet you anyways."
-    subprocess.call('espeak -s 100 -v en-uk-north "%s" --stdout | aplay'%text, shell=True)
+        subprocess.call('espeak -s 100 -v en-uk-north "%s" --stdout | aplay'%text, shell=True)
     logging.debug('finished speaking')   
 
 def blink_eyes():
