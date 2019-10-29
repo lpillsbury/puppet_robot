@@ -41,7 +41,7 @@ def fart():
     logging.debug('farting again')
     which_fart = random.randint(1,8)
     fname = 'fart' + which_fart + '.wav'
-    subprocess.call(aplay fname)
+    # subprocess.call(aplay fname)
     logging.debug('done farting')
    
 def sing():
