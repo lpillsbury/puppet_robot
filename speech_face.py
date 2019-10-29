@@ -15,7 +15,7 @@ logging.basicConfig(level=logging.DEBUG)
 logging.debug('Starting the program')
 logging.debug('python version ' + sys.version)
 
-# sEnter your name here then hit returnet up GPIO settings and pins
+# set up GPIO settings and pins
 GPIO.setwarnings(False)
 GPIO.setmode(GPIO.BCM)
 g_eye = 17
@@ -38,8 +38,10 @@ def get_uname():
     # need this to be global so that it will be available to say_stuff function
     try:
         uname = input('Enter your name here then hit return\n')
+        logging.debug('got user name')
         return uname
     except:
+        logging.debug('did not get user name')
         return 1
     
 def say_stuff():
@@ -89,6 +91,8 @@ def move_mouth(talk_func_name):
     
     # puppet will only move its mouth when it says words
     keep_talking = talk_func_name.isAlive()
+    logging.debug('keep talking=')
+    logging.debug(keep_talking)
     while (keep_talking==True):
         p.ChangeDutyCycle(3)
         time.sleep(0.2)
