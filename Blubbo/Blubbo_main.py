@@ -10,6 +10,7 @@ import threading # read https://realpython.com/intro-to-python-threading/
 import logging # info about how to use logging at https://realpython.com/python-logging/
 import sys
 import random # for random number generation at a few places
+import pygame
 
 logging.basicConfig(level=logging.DEBUG)
 logging.debug('Starting the program')
@@ -40,7 +41,7 @@ def fart():
     # https://raspberrypi.stackexchange.com/questions/7088/playing-audio-files-with-python
     logging.debug('farting again')
     which_fart = random.randint(1,8)
-    fname = 'fart' + which_fart + '.wav'
+    fname = 'fart' + which_fart + '.mp3'
     # subprocess.call(aplay fname)
     logging.debug('done farting')
    
