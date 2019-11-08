@@ -19,16 +19,23 @@ logging.debug('python version ' + sys.version)
 # setup GPIO settings and pins
 GPIO.setwarnings(False)
 GPIO.setmode(GPIO.BCM)
-g_eye = 17
-b_eye =15
-r_eye = 14
+
+# red, green, blue eye pins, servo pin, right/left capacitive sensors
+
+r_eye = 17
+g_eye = 27
+b_eye = 22
 servoPIN = 18
+capR = 24
+capL = 23
 # define the capacitive sensor pins here or in function?
 # is function in this code or separate?
 
 GPIO.setup(g_eye,GPIO.OUT)
 GPIO.setup(b_eye,GPIO.OUT)
 GPIO.setup(r_eye,GPIO.OUT)
+GPIO.setup(capR, GPIO.OUT)
+GPIO.setup(capL, GPIO.OUT)
 GPIO.setup(servoPIN, GPIO.OUT)
 
 def say_greeting():
@@ -73,7 +80,7 @@ def blink_eyes():
         GPIO.output(b_eye,False)
     elif blink_type ==3 # etc etc how many choices do I want
 
-def move_mouth(talk_func_name):
+def move_mouth(func_name):
     # Blubbo will move his mouth when singing or introducing himself
     p = GPIO.PWM(servoPIN, 50)  # sets PWM to frequency of 50 Hz
     logging.debug('moving mouth in accordance with speech in:')
