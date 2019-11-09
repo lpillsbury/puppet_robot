@@ -68,6 +68,7 @@ greet = threading.Thread(target = say_greeting)
 blink = threading.Thread(target = blink_eyes)
 fart = threading.Thread(target = make_fart)
 
+
 def main():
     greet.start()
     fart.start()
