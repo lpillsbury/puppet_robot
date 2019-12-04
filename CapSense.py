@@ -10,7 +10,7 @@ GPIO.setwarnings(False)
 
 def CapRead(inPin,outPin):
     total = 0
-    timeout = 10000
+    timeout = 5000
     # set Send Pin Register low
     GPIO.setup(outPin, GPIO.OUT)
     GPIO.output(outPin, GPIO.LOW)
@@ -50,14 +50,15 @@ def CapRead(inPin,outPin):
         return total
 
 def main():
-    inPin = 26
-    outPin = 21
-    for x in range (0,100):
+    inPin = 16
+    outPin = 12
+    for x in range (0,1900):
         level = CapRead(inPin, outPin)
+        print('level')
         print(level)
-        if level > 300:
+        if level > 20:
             print('sensed')
-        time.sleep(5)
+        time.sleep(0.1)
     
 if __name__=="__main__":
     main()
