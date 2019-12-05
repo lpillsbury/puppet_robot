@@ -4,7 +4,8 @@
 # then offers to sing. When Blubbo sings, he may also fart
 # Blubbo farts at random time intervals
 # After 5 mins Blubbo says goodbye and the program ends
-# The program can also end earlier upon user request (by touching other fin?)
+# The program can also end earlier upon
+# user request (by touching other fin?)
 
 import subprocess
 import RPi.GPIO as GPIO
@@ -43,10 +44,17 @@ GPIO.setup(servoPIN, GPIO.OUT)
 blub = Blubbo()
 
 # make one speak function for all of the talking
-def say_greeting():
+def talk(talk_type):
+    # Blubbo talks to introduce himself and to say goodbye.
+    # in the class Blubbo talk[0] is for greeting, talk[1] for goodbye
+    # in the future, can add more talk_types
     logging.debug('starting speaking')
-    subprocess.call('espeak -s 100 -v en "%s" --stdout | aplay'%blub.talk[0], shell=True)
-    logging.debug('finished saying greeting')
+    # need to a this point start moving the mouth
+    
+    # talk
+    subprocess.call('espeak -s 100 -v en "%s" --stdout | aplay'%blub.talk[talk_type], shell=True)
+    # stop mouth moving
+    logging.debug('finished talking')
 
 def make_fart():
     whichfart = random.randint(1,7)
@@ -66,14 +74,21 @@ def blink_eyes():
     fart.join()
     logging.debug('done blinking')
     
-def sing_song():
-    whichsong = blub.song[2]
+def sing_song(which_song):
+    # This function plays any audio file and couples it with moving the mouth
+    
     logging.debug('which song')
-    logging.debug(whichsong)
+    logging.debug(which_song)
     pygame.mixer.init()
-    pygame.mixer.music.load(blub.song[2])
+    
+    # start moving the mouth
+    
+    pygame.mixer.music.load(blub.song[which_song])
     pygame.mixer.music.play()
-    logging.debug('played birthday song')
+    
+    # stop moving the mouth
+    
+    logging.debug('played song')
     
 def read_fin(): # should there be arguments about which fin wea re reading?
     for x in range (0,1900):
@@ -127,10 +142,19 @@ def cap_read(inPin,outPin):
 
     
 # define threads
-greet = threading.Thread(target = say_greeting)
-blink = threading.Thread(target = blink_eyes)
-fart = threading.Thread(target = make_fart)
-#sing = threading.Thread(target = sing_song)
+# change the targets
+# there is one thread for moving the mouth
+# another thread for eye state
+# another for cap sensor state?
+# talking is dependent on end and start
+# singing dependent on cap sensor
+# cap sensor has a state variable
+# farting is also dependent on time does it need its own thread?
+
+# farting, talking, singing are dependent on what happens
+mouth = threading.Thread(target = say_greeting)
+eyes = threading.Thread(target = blink_eyes)
+
 
 if __name__=="__main__":
     blub.eyes_on(r_eye, g_eye, b_eye)
