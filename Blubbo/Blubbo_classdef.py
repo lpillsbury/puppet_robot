@@ -1,6 +1,11 @@
 import logging
 import RPi.GPIO as GPIO
 import time
+import random
+
+GPIO.setwarnings(False)
+GPIO.setmode(GPIO.BCM)
+
 
 class Blubbo:
     'Things that Blubbo can do'
@@ -15,6 +20,7 @@ class Blubbo:
         self.song = ["ILRNR.mp3", "You_shook_me.mp3", "Beatles_birthday.mp3", "GummyBear.mp3"]
         
         # talk is array of things he can say: a greeting and a goodbye
+        self.talk = ['greet','goodbye']
         self.talk[0] = "My name is Blubbo. I am a fish. I like to sing. If you touch my fin, I will sing for you"
         self.talk[1] = "It was great to sing and play today. Goodbye"
         
@@ -96,6 +102,7 @@ class Blubbo:
             self.eyes_off(r,g,b)
             
     def move_mouth(self, servoPIN):
+        GPIO.setup(servoPIN, GPIO.OUT)
         p = GPIO.PWM(servoPIN, 50)  # sets PWM to frequency of 50 Hz
         for i in range(4):
             p.start(99) # initialization to 2.5% of duty cycle

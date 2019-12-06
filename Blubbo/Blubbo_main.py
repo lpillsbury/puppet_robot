@@ -48,15 +48,17 @@ talk_state = 0; # when it is time to talk, talk_state will become 1
 eye_state = 0; # this means all eyes are off, 1 for all eyes on and 2 for blinking
 
 # make one speak function for all of the talking
-def talk(talk_type):
+def say_stuff(talk_type):
     # Blubbo talks to introduce himself and to say goodbye.
     # in the class Blubbo talk[0] is for greeting, talk[1] for goodbye
     # in the future, can add more talk_types
-    logging.debug('starting speaking')
     
     # need to a this point start moving the mouth
+    global talk_state
     talk_state = 1;
     
+    logging.debug('starting speaking')
+    time.sleep(2)
     # talk
     subprocess.call('espeak -s 100 -v en "%s" --stdout | aplay'%blub.talk[talk_type], shell=True)
     
@@ -66,28 +68,35 @@ def talk(talk_type):
     logging.debug('finished talking')
 
 def make_fart():
+    # Even though farting and singing are both playing audio files,
+    # these need to be separate functions because farting can happen while singing
+    # and because farting is coupled with blinking whereas
+    # singing is coupled with mouth movement
+    global eye_state
     whichfart = random.randint(1,7)
     logging.debug('which fart')
     logging.debug(whichfart)
+    eye_state = 2
     pygame.mixer.init()
     pygame.mixer.music.load(blub.fart[whichfart])
     pygame.mixer.music.play()
-    
+    eye_state = 1
     
 def sing_song(which_song):
     # This function plays any audio file and couples it with moving the mouth
+    global talk_state
     
     logging.debug('which song')
     logging.debug(which_song)
     pygame.mixer.init()
     
     # start moving the mouth
-    
+    talk_state = 1
     pygame.mixer.music.load(blub.song[which_song])
     pygame.mixer.music.play()
     
     # stop moving the mouth
-    
+    talk_state = 0
     logging.debug('played song')
     
 
@@ -97,14 +106,24 @@ def mouth_control():
     # Blubbo will move his mouth.
     # If talk_state is 0 then Blubbo just waits
     # in the future there could be different mouth movements for singing vs talking
+    logging.debug('started mouth control')
     while mouth.isAlive():
+        logging.debug('mouth thread is alive')
         if talk_state == 1:
             blub.move_mouth(servoPIN)
+            logging.debug('called mouth moving function from Blubbo class')
         time.sleep(0.5) # small delay so that program doesn't trip over itself
-        
+        logging.debug('talk state is: ')
+        logging.debug(talk_state)
+    logging.debug('ended mouth control')
+    
 def eye_control():
     # This function controls whether Blubbo should be eyes off, eyes steady, or blinking
+    logging.debug('started eye control')
     while eyes.isAlive():
+        logging.debug('eye thread is alive')
+        logging.debug('current eye state: ')
+        logging.debug(eye_state)
         if eye_state == 0:
             blub.eyes_off(r_eye, g_eye, b_eye)
         elif eye_state == 1:
@@ -129,7 +148,33 @@ eyes = threading.Thread(target = eye_control)
 
 
 if __name__=="__main__":
-    blub.eyes_on(r_eye, g_eye, b_eye)
+    start_time = time.time()
+    end_time = start_time + 60 # set the end time as 1 minute after start
+    
     mouth.start()
     eyes.start()
+    say_stuff(0)
+    time.sleep(2)
+    # set a random time when Blubbo will fart next
+    next_fart = random.randint(time.time(), end_time)
+    
+    # Blubbo is available to sing until timeout
+    while(time.time < end_time):
+        logging.debug('elapsed time:')
+        logging.debug(time.time-start_time)
+        logging.debug('next fart scheduled for:')
+        logging.debug(next_fart)
+        sing_song(2)
+        time.sleep(3)
+        # when it's time to fart he farts
+        if time.time >= next_fart:
+            make_fart()
+            time.sleep(2)
+            next_fart = random.randint(time.time, end_time)
+    
+    # say goodbye
+    say_stuff(1)    
+    # wait to say goodbye until done singing
+    mouth.join()
+    eyes.join()
     
