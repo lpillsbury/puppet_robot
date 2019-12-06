@@ -43,17 +43,26 @@ GPIO.setup(servoPIN, GPIO.OUT)
 # make blub object from Blubbo class
 blub = Blubbo()
 
+# global variables for thread states
+talk_state = 0; # when it is time to talk, talk_state will become 1
+eye_state = 0; # this means all eyes are off, 1 for all eyes on and 2 for blinking
+
 # make one speak function for all of the talking
 def talk(talk_type):
     # Blubbo talks to introduce himself and to say goodbye.
     # in the class Blubbo talk[0] is for greeting, talk[1] for goodbye
     # in the future, can add more talk_types
     logging.debug('starting speaking')
+    
     # need to a this point start moving the mouth
+    talk_state = 1;
     
     # talk
     subprocess.call('espeak -s 100 -v en "%s" --stdout | aplay'%blub.talk[talk_type], shell=True)
+    
     # stop mouth moving
+    talk_state = 0;
+    
     logging.debug('finished talking')
 
 def make_fart():
@@ -64,15 +73,6 @@ def make_fart():
     pygame.mixer.music.load(blub.fart[whichfart])
     pygame.mixer.music.play()
     
-def blink_eyes():
-    blink_type=random.randint(1,4)
-    keep_blinking = fart.isAlive()
-    while(keep_blinking == True):
-        logging.debug('blinking')
-        blub.blink(blink_type, r_eye, g_eye, b_eye)
-        keep_blinking = fart.isAlive()
-    fart.join()
-    logging.debug('done blinking')
     
 def sing_song(which_song):
     # This function plays any audio file and couples it with moving the mouth
@@ -90,56 +90,28 @@ def sing_song(which_song):
     
     logging.debug('played song')
     
-def read_fin(): # should there be arguments about which fin wea re reading?
-    for x in range (0,1900):
-        level = cap_read(capRin, capRout)
-        print('level')
-        print(level)
-        if level > 20:
-            return True
-        time.sleep(0.1)
-        
-def cap_read(inPin,outPin):
-    total = 0
-    timeout = 5000
-    # set Send Pin Register low
-    GPIO.setup(outPin, GPIO.OUT)
-    GPIO.output(outPin, GPIO.LOW)
-    
-    # set receivePin Register low to make sure pullups are off 
-    GPIO.setup(inPin, GPIO.OUT)
-    GPIO.output(inPin, GPIO.LOW)
-    GPIO.setup(inPin, GPIO.IN)
-    
-    # set send Pin High
-    GPIO.output(outPin, GPIO.HIGH)
-    
-    # while receive pin is LOW AND total is positive value
-    while( GPIO.input(inPin) == GPIO.LOW and total < timeout ):
-        total+=1
-    print('total after low: ', total)
-    
-    if ( total > timeout ):
-        return -2 # total variable over timeout
-        
-     # set receive pin HIGH briefly to charge up fully - because the while loop above will exit when pin is ~ 2.5V 
-    GPIO.setup( inPin, GPIO.OUT )
-    GPIO.output( inPin, GPIO.HIGH )
-    GPIO.setup( inPin, GPIO.IN )
-    
-    # set send Pin LOW
-    GPIO.output( outPin, GPIO.LOW ) 
 
-    # while receive pin is HIGH  AND total is less than timeout
-    while (GPIO.input(inPin)==GPIO.HIGH and total < timeout) :
-        total+=1
-    print('total after high: ', total)
-    
-    if ( total >= timeout ):
-        return -2
-    else:
-        return total
 
+def mouth_control():
+    # If Blubbo is supposed to be talking or singing, talk_state will be 1
+    # Blubbo will move his mouth.
+    # If talk_state is 0 then Blubbo just waits
+    # in the future there could be different mouth movements for singing vs talking
+    while mouth.isAlive():
+        if talk_state == 1:
+            blub.move_mouth(servoPIN)
+        time.sleep(0.5) # small delay so that program doesn't trip over itself
+        
+def eye_control():
+    # This function controls whether Blubbo should be eyes off, eyes steady, or blinking
+    while eyes.isAlive():
+        if eye_state == 0:
+            blub.eyes_off(r_eye, g_eye, b_eye)
+        elif eye_state == 1:
+            blub.eyes_on(r_eye, g_eye, b_eye)
+        elif eye_state == 2:
+            blink = random.randint(1,4)
+        time.sleep(0.5) # small delay so that program doesn't trip over itself
     
 # define threads
 # change the targets
@@ -152,21 +124,12 @@ def cap_read(inPin,outPin):
 # farting is also dependent on time does it need its own thread?
 
 # farting, talking, singing are dependent on what happens
-mouth = threading.Thread(target = say_greeting)
-eyes = threading.Thread(target = blink_eyes)
+mouth = threading.Thread(target = mouth_control)
+eyes = threading.Thread(target = eye_control)
 
 
 if __name__=="__main__":
     blub.eyes_on(r_eye, g_eye, b_eye)
-    greet.start()
-    time.sleep(2)
+    mouth.start()
+    eyes.start()
     
-    fart.start()
-    blink.start()
-    time.sleep(10)
-    fart.join()
-    blink.join()
-    greet.join()
-    sing_song()
-    #make_fart()
-    #sing.start() 
