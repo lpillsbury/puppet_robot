@@ -14,14 +14,15 @@ class Blubbo:
         # all the sounds that are associated with Blubbo
         
         # fart sounds
-        self.fart = ["fart1.mp3", "fart2.mp3", "fart3.mp3", "fart4.mp3", "fart5.mp3", "fart6.mp3", "fart7.mp3"]
+        self.fart = ["fart0.mp3", "fart1.mp3", "fart2.mp3", "fart3.mp3", "fart4.mp3", "fart5.mp3", "fart6.mp3"]
         
         # songs he currently knows how to sing
         self.song = ["ILRNR.mp3", "You_shook_me.mp3", "Beatles_birthday.mp3", "GummyBear.mp3"]
         
         # talk is array of things he can say: a greeting and a goodbye
         self.talk = ['greet','goodbye']
-        self.talk[0] = "My name is Blubbo. I am a fish. I like to sing. If you touch my fin, I will sing for you"
+        self.talk[0] = "Hi its me Blubbo"
+        #self.talk[0] = "My name is Blubbo. I am a fish. I like to sing. If you touch my fin, I will sing for you"
         self.talk[1] = "It was great to sing and play today. Goodbye"
         
     def eyes_off(self, r,g,b):
@@ -104,7 +105,7 @@ class Blubbo:
     def move_mouth(self, servoPIN):
         GPIO.setup(servoPIN, GPIO.OUT)
         p = GPIO.PWM(servoPIN, 50)  # sets PWM to frequency of 50 Hz
-        for i in range(4):
+        for i in range(2):
             p.start(99) # initialization to 2.5% of duty cycle
             # why did I choose 2.5? 
             time.sleep(random.randint(15,60)/150.0)

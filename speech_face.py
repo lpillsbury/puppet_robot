@@ -33,7 +33,7 @@ def say_greetings():
     subprocess.call('espeak -s 100 -v es "Yo soy una muneca. Quien eres tu?" --stdout | aplay', shell=True)
     logging.debug('finished saying greetings')
     greet_event.clear()
-    
+
 def get_uname():
     # need this to be global so that it will be available to say_stuff function
     try:
@@ -43,7 +43,7 @@ def get_uname():
     except:
         logging.debug('did not get user name')
         return 1
-    
+
 def say_stuff():
     logging.debug('talking to the user')
     try:
@@ -56,7 +56,7 @@ def say_stuff():
     except:
         text = "Sorry I didn't understand you. It's nice to meet you anyways."
         subprocess.call('espeak -s 100 -v en-uk-north "%s" --stdout | aplay'%text, shell=True)
-    logging.debug('finished speaking')   
+    logging.debug('finished speaking')
 
 def blink_eyes():
     blink_type=1
@@ -87,8 +87,8 @@ def move_mouth(talk_func_name):
     logging.debug('moving mouth in accordance with speech in:')
     logging.debug(talk_func_name)
     p.start(2.5) # initialization to 2.5% of duty cycle
-    # why did I choose 2.5? 
-    
+    # why did I choose 2.5?
+
     # puppet will only move its mouth when it says words
     keep_talking = talk_func_name.isAlive()
     logging.debug('keep talking=')
@@ -131,9 +131,9 @@ def main():
     time.sleep(2)
     logging.debug('will now respond')
     yap2.start()
-    
+
     say_more.start()
     yap2.join()
- 
+
 if __name__=="__main__":
     main()
