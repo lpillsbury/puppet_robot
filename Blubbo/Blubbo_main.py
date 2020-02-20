@@ -37,6 +37,7 @@ capLin = 23
 GPIO.setup(g_eye,GPIO.OUT)
 GPIO.setup(b_eye,GPIO.OUT)
 GPIO.setup(r_eye,GPIO.OUT)
+
 # setup the cap sensors in cap read function
 GPIO.setup(servoPIN, GPIO.OUT)
 
@@ -44,8 +45,8 @@ GPIO.setup(servoPIN, GPIO.OUT)
 blub = Blubbo()
 
 # global variables for thread states
-# talk_state = 0; # when it is time to talk, talk_state will become 1
-eye_state = 0; # this means all eyes are off, 1 for all eyes on and 2 for blinking
+talk_state = 0 # when it is time to talk, talk_state will become 1
+eye_state = 0 # this means all eyes are off, 1 for all eyes on and 2 for blinking
 pygame.mixer.init()
 
 # make one speak function for all of the talking
@@ -96,6 +97,7 @@ def sing_song(which_song):
     pygame.mixer.music.play()
     time.sleep(10)
     pygame.mixer.music.stop()
+    
     # stop moving the mouth
     mouth_event.clear()
     
@@ -121,17 +123,17 @@ def mouth_control():
 def eye_control():
     # This function controls whether Blubbo should be eyes off, eyes steady, or blinking
     logging.debug('started eye control')
-    while (time.time() < end_time): # this is an infinite loop
-        logging.debug('eye thread is alive')
-        logging.debug('current eye state: ')
-        logging.debug(eye_state)
-        if eye_state == 0:
-            blub.eyes_off(r_eye, g_eye, b_eye)
-        elif eye_state == 1:
-            blub.eyes_on(r_eye, g_eye, b_eye)
-        elif eye_state == 2:
-            blink = random.randint(1,4)
-        time.sleep(0.5) # small delay so that program doesn't trip over itself
+    logging.debug('eye thread is alive')
+    logging.debug('current eye state: ')
+    logging.debug(eye_state)
+    if eye_state == 0:
+        blub.eyes_off(r_eye, g_eye, b_eye)
+    elif eye_state == 1:
+        blub.eyes_on(r_eye, g_eye, b_eye)
+    elif eye_state == 2:
+        blink = random.randint(1,4)
+    # is this even necessary here?
+    time.sleep(0.5) # small delay so that program doesn't trip over itself
     
 # define threads
 # change the targets
@@ -155,38 +157,45 @@ if __name__=="__main__":
     logging.debug('start time')
     logging.debug(start_time)
     mouth.start()
-    #eyes.start()
+    eyes.start()
     eye_state = 1
     say_stuff(0)
-    #time.sleep(2)
+    time.sleep(2)
     # set a random time when Blubbo will fart next
     next_fart = random.uniform(time.time(), end_time)
     
     # Blubbo is available to sing until timeout
-    #while(time.time() < end_time):
-        #logging.debug('elapsed time:')
-        #logging.debug(time.time()-start_time)
-        #logging.debug('next fart scheduled for:')
-        #logging.debug(next_fart)
+    # the problem with this current setup is that every time he farts start singing
+    # a new song
+    # also, farts get closer and closer together as time until end gets longer
+    # maybe better to say next fart is between 1 and 10 seconds from now
+    while(time.time() < end_time):
+        logging.debug('elapsed time:')
+        logging.debug(time.time()-start_time)
+        logging.debug('next fart scheduled for:')
+        logging.debug(next_fart-time.time())
+        logging.debug('seconds from now')
         #logging.debug('talk state')
         #logging.debug(talk_state)
         #if not mouth_event.isSet():
-    song_num = random.randint(0,3)
-    sing_song(song_num)
-#     mouth_event.wait()
+        song_num = random.randint(0,3)
+        sing_song(song_num)
+        # mouth_event.wait()
     # time.sleep(10)
         # when it's time to fart he farts
-        #if time.time() >= next_fart:
-            #make_fart()
-            #time.sleep(2)
-            #next_fart = random.uniform(time.time(), end_time)
+        if time.time() >= next_fart:
+            make_fart()
+            time.sleep(2)
+            next_fart = random.uniform(time.time(), end_time)
     
     # say goodbye
-    say_stuff(1)    
+    say_stuff(1)
+    
     # wait to say goodbye until done singing
     logging.debug('joining threads')
     mouth.do_run = False
     mouth.join()
-   # eyes.join()
+    eye_state = 0
+    eyes.join()
     logging.debug('threads are joined')
     
